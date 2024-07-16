@@ -1,4 +1,4 @@
-import Db_connection from "./db/index.js";
+import Db_connection from "./db/db_connection.js";
 import dotenv from "dotenv"
 import {app} from "./app.js" 
 dotenv.config({

@@ -4,9 +4,9 @@ import {ApiError} from "../../utils/ApiError.js"
 import { Admin } from "../../models/Admin/Admin.model.js";
 
 
-const generateAccessandRefreshTokens=async(userId)=>{
+const generateAccessandRefreshTokens=async(adminId)=>{
     try{
-       const admin=await Admin.findById(userId);
+       const admin=await Admin.findById(adminId);
        const accessToken=admin.generateAccessToken();
        const refreshToken=admin.generateRefreshToken();
        admin.refreshToken=refreshToken;
@@ -16,19 +16,17 @@ const generateAccessandRefreshTokens=async(userId)=>{
     catch(err){
         console.log(err);
         throw new ApiError(500,"Error while generating access or refresh token")
-       
     }
 }
 
-const loginAdmin=asyncHandler(async(req,res)=>{
-   const {admin_id,name,email,password}=req.body;
-   if([admin_id,name,email].some((field)=>{field?.trim()===""})) throw new ApiError(400,"Invalid credentials");
-   const admin=await Admin.find({
-    $or:[{username},{email}]
+const loginAdmin= asyncHandler(async(req,res)=>{
+   const {email,admin_id,password}=req.body;
+   if(!email  && !admin_id) throw new ApiError(400,"Invalid credentials");
+   const admin=await Admin.findOne({
+    $or:[{admin_id},{email}]
    });
-  if(!admin) throw new ApiError(400,"Admin already loggedIn");
-  const isPasswordCorrect=await admin.isPasswordCorrect(password);
-  if(!isPasswordCorrect) throw new ApiError(401,"Incorrect Password");
+  if(!admin) throw new ApiError(400,"Admin does not exist");
+  if(password!=admin.password) throw new ApiError(401,"incorrect password")
   const {accessToken,refreshToken}= await generateAccessandRefreshTokens(admin._id);
   const loggedInAdmin=await Admin.findById(admin._id).select("-password -refreshToken")
   const options={

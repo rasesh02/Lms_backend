@@ -3,6 +3,7 @@ import {ApiResponse} from "../../utils/ApiResponse.js";
 import {ApiError} from "../../utils/ApiError.js"
 import { Agent } from "../../models/Admin/agentModel.js";
 import bcrypt from "bcrypt";
+import nodemailer from "nodemailer";
 
 const generateAccessandRefreshTokens=async(agentId)=>{
     try{
@@ -36,11 +37,33 @@ const registerAgent=asyncHandler(async(req,res)=>{
         email,
         password:hashedPassword,
     });
+    let testAccount=await nodemailer.createTestAccount();
+    let transporter=nodemailer.createTransport({
+        service: "gmail",
+        auth:{
+            user: "sushrutpandey1@gmail.com",
+            pass: "jucopocadqdwpvll",
+        }
+    });
+    let info=await transporter.sendMail({
+        from:"sushrutpandey1@gmail.com",
+        to: email,
+        subject: "Registration Confirmed On M_CMS",   
+        text: "Welcome to Customer Management System of Milleniance",
+        html: `<b>Dear ${fullName}</b><br><b>Welcome to CMS of Milleniance</b><br>
+        <p>Your registration was successful. Thank you for joining our service!</p>
+        <b>Your Login Id = </b> ${email} or ${uniqueAgentId}<br><b>Your Login Password = </b>${password}
+        <p>Please find the attached download button with this email for downloading your desktop application.</p>
+        <p>For any query do reply to this email</p><br>
+        
+        <p>Best Regards</p>
+        <p>Head Office</p><p>Milleniance Softnet</p><p>New Ashok Nagar Delhi 110096 Near Metro Station Noida sector-18</p><p><b>Thank You</b></p> `, // html body
+    })
+
     const createdAgent=await Agent.findById(newAgent._id).select("-password -agent_id");
     if(!createdAgent) throw new ApiError(500,"Some error occured while registration of agent")
     return res.status(200).json(new ApiResponse(200,createdAgent,"Agent registration succesfull"));
 })
-
 
 const loginAgent=asyncHandler(async(req,res)=>{
     const {email,agent_id,password}=req.body;
@@ -67,5 +90,11 @@ const loginAgent=asyncHandler(async(req,res)=>{
        )
     )
 }) 
+const dummy=asyncHandler(async(req,res)=>{
+    console.log("hi");
+    return res.status(200).json(new ApiResponse(200,"Hello"));
+})
 
-export {registerAgent,loginAgent};
+
+
+export {registerAgent,loginAgent,dummy};

@@ -81,7 +81,6 @@ const updateAdminProfile=asyncHandler(async(req,res)=>{
 const changePassword=asyncHandler(async(req,res)=>{
     //verify old password
     //save new password
-    /*
     const {oldPassword,newPassword,admin_id}=req.body;
     const admin=await Admin.findOne({admin_id});
     //console.log(admin.password);
@@ -89,11 +88,6 @@ const changePassword=asyncHandler(async(req,res)=>{
     console.log(currhashedPassword);
   //  console.log(currhashedPassword);
    if(!currhashedPassword && admin.password!==oldPassword)  throw new ApiError(400,"Admin has entered wrong old password");
-    const newHashedPassword=await bcrypt.hash(newPassword,10);
-    */
-   const {admin_id,newPassword}=req.body;
-    if(newPassword.trim()==="") throw new ApiError(400,"enter valid password");
-    const admin=await Admin.findOne({admin_id});
     const newHashedPassword=await bcrypt.hash(newPassword,10);
     admin.password=newHashedPassword;
    await admin.save({validateBeforeSave: false});

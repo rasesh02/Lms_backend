@@ -39,15 +39,15 @@ const registerAdmin=asyncHandler(async(req,res)=>{
 })
 
 const loginAdmin= asyncHandler(async(req,res)=>{
-   const {email,admin_id,password}=req.body;
-   if(!email  && !admin_id) throw new ApiError(400,"Invalid credentials");
+   const {id,password}=req.body;
+   if(!id  && !password) throw new ApiError(400,"Invalid credentials",["please enter id and password"]);
    const admin= await Admin.findOne({
-    $or:[{admin_id},{email}]
+    $or:[{admin_id:id},{email: id}]
    });
-  if(!admin) throw new ApiError(400,"Admin does not exist");
+  if(!admin) throw new ApiError(400,"Admin does not exist",["Incorrect id"]);
   const hashedPassword=await bcrypt.compare(password, admin.password);
   console.log(hashedPassword);
-  if(!hashedPassword  && admin.password!==password) throw new ApiError(401,"incorrect password");
+  if(!hashedPassword  && admin.password!==password) throw new ApiError(401,"incorrect password",["incorrect password"]);
 
   const {accessToken,refreshToken}= await generateAccessandRefreshTokens(admin._id);
   const loggedInAdmin=await Admin.findById(admin._id).select("-password -refreshToken")

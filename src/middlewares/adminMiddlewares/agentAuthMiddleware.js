@@ -6,7 +6,7 @@ import { Agent } from "../../models/Admin/agentModel";
 
 export const verifyAgentJWT=asyncHandler(async(req,res,next)=>{
     try{
-       const token=req.cookies.accessToken || req.header("Authorization")?.replace("Bearer ","");
+       const token=req.cookies?.accessToken || req.header("Authorization")?.replace("Bearer ","");
        if(!token) throw new ApiError(401,"Unauthorized request");
        const decodeToken=jwt.verify(token,process.env.ACCESS_TOKEN_SECRET);
        const agent=await Agent.findById(decodeToken?._id).select("-password -refreshToken");

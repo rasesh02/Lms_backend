@@ -66,10 +66,10 @@ const registerAgent=asyncHandler(async(req,res)=>{
 })
 
 const loginAgent=asyncHandler(async(req,res)=>{
-    const {email,agent_id,password}=req.body;
-    if(!email && !agent_id) throw new ApiError(400,"Login credentials incomplete");
+    const {id,password}=req.body;
+    if(!id && !password) throw new ApiError(400,"Login credentials incomplete");
     const agent=await Agent.findOne({
-        $or: [{email},{agent_id}]
+        $or: [{email: id},{agent_id: id}]
     })
     if(!agent) throw new ApiError(400,"Agent does not exists");
     const isPasswordValid=await agent.isPasswordCorrect(password);

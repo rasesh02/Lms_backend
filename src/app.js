@@ -15,7 +15,10 @@ app.use(cookieParser())
 
 import adminRouter from "../src/routes/admin.routes.js";
 import agentRouter from "../src/routes/agentRoutes.js";
+import leadRouter from "../src/routes/leadRoutes.js"
+
 app.use("/api/v1/admin",adminRouter);
 app.use("/api/v1/agent",agentRouter);
+app.use("/api/v1/leads",leadRouter);
 
 export {app};

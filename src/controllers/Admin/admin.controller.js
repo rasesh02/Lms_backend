@@ -4,6 +4,7 @@ import {ApiError} from "../../utils/ApiError.js"
 import { Admin } from "../../models/Admin/Admin.model.js";
 import bcrypt from "bcrypt";
 import { Agent } from "../../models/Admin/agentModel.js";
+import nodemailer from "nodemailer";
 
 const generateAccessandRefreshTokens=async(adminId)=>{
     try{
@@ -40,14 +41,14 @@ const registerAdmin=asyncHandler(async(req,res)=>{
 
 const loginAdmin= asyncHandler(async(req,res)=>{
    const {id,password}=req.body;
-   if(!id  && !password) throw new ApiError(400,"Invalid credentials",["please enter id and password"]);
+   if(!id  && !password) throw new ApiError(400,"Invalid credentials");
    const admin= await Admin.findOne({
     $or:[{admin_id:id},{email: id}]
    });
-  if(!admin) throw new ApiError(400,"Admin does not exist",["Incorrect id"]);
+  if(!admin) throw new ApiError(400,"Admin does not exist","Incorrect id");
   const hashedPassword=await bcrypt.compare(password, admin.password);
   console.log(hashedPassword);
-  if(!hashedPassword  && admin.password!==password) throw new ApiError(401,"incorrect password",["incorrect password"]);
+  if(!hashedPassword  && admin.password!==password) throw new ApiError(401,"incorrect password lp","incorrect password 888");
 
   const {accessToken,refreshToken}= await generateAccessandRefreshTokens(admin._id);
   const loggedInAdmin=await Admin.findById(admin._id).select("-password -refreshToken")
@@ -91,6 +92,28 @@ const changePassword=asyncHandler(async(req,res)=>{
     const newHashedPassword=await bcrypt.hash(newPassword,10);
     admin.password=newHashedPassword;
    await admin.save({validateBeforeSave: false});
+
+   
+   await nodemailer.createTestAccount();
+   let transporter=nodemailer.createTransport({
+       service: "gmail",
+       auth:{
+           user: "sushrutpandey1@gmail.com",
+           pass: "jucopocadqdwpvll",
+       }
+   });
+   let info=await transporter.sendMail({
+       from:"sushrutpandey1@gmail.com",
+       to: admin.email,
+       subject: "Password has been changed at Milleniance LMS",   
+       text: "Dear Admin you have your password has been changed successfully",
+       html: ` <p>Hey ${admin.name}! </p><br>
+       <p>You have recently changed your password</p>
+       <b>Your new password is ${newPassword}.<br>
+       <p>Thank you for visiting Milleniance</p><br>
+       <p>Best Regards</p>
+       <p>Head Office</p><p>Milleniance Softnet</p><p>New Ashok Nagar Delhi 110096 Near Metro Station Noida sector-18</p><p><b>Thank You</b></p> `, // html body
+   })
    return res.status(200).json(new ApiResponse(200,{},"password changed successfully"))
 })
 

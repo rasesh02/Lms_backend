@@ -33,6 +33,10 @@ const agentSchema= new Schema({
    password:{
     type: String,
     required: [true, 'Password is required'],
+   },
+   service:{
+    type: String,
+    required: true,
    }
 })
 

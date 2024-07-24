@@ -95,7 +95,48 @@ const dummy=asyncHandler(async(req,res)=>{
     return res.status(200).json(new ApiResponse(200,"Hello"));
 })
 
+const logoutAgent=asyncHandler(async(req,res)=>{
+    //console.log(req.agent._id);
+    await Agent.findByIdAndUpdate(req.agent._id,
+        {
+           $unset:{refreshToken:1 } //remove field from document-> error for $set refreshToken: undefined
+       },
+        {new: true,}) 
+       const options={
+        httpOnly: true,
+        secure: true,
+        }
+        return res.status(200).clearCookie("accessToken",options)
+        .clearCookie("refreshToken",options).json(new ApiResponse(200,{},"Agent logged Out"))
+})
 
+const updateAgentDetails=asyncHandler(async(req,res)=>{
+    const {fullName,address,company_name,phone_number,email}=req.body;
+   if(!fullName || !address || !company_name || !phone_number || !email) return res.status(401).json({error: "All fields must be filled"});
+    //console.log(req.agent._id);
+    const agent=await Agent.findByIdAndUpdate(req.agent?._id,{
+       $set:{
+         fullName: fullName,
+        address: address,
+        company_name: company_name,
+        phone_number: phone_number,
+        email: email,
+       }
+    },{new: true}).select("-password");
+    return res.status(200).json(new ApiResponse(200,agent,"Agent details updated successfully"));
+})
 
+const changeAgentPassword=asyncHandler(async(req,res)=>{
+    const {oldPassword,newPassword}=req.body;
+    if(!oldPassword || !newPassword) return res.status(400).json({error: "Invalid credentials"});
+    const agent=await Agent.findById(req.agent._id);
+    if(!agent) return res.status(500).json({error: "Server eror"});
+    const hashedOldPassword= await bcrypt.compare(oldPassword,agent.password);
+    if(oldPassword!==agent.password && !hashedOldPassword) return res.status(400).json({error: "Invalid Old Password"});
+    const hashedNewPassword=await bcrypt.hash(newPassword,10);
+    agent.password=hashedNewPassword;
+    agent.save({validateBeforeSave:false});
+    return res.status(200).json(new ApiResponse(200,{},"Agent details changed successfully"));
+})
 
-export {registerAgent,loginAgent,dummy};
+export {registerAgent,loginAgent,dummy,logoutAgent,updateAgentDetails,changeAgentPassword};

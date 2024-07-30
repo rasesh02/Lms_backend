@@ -5,6 +5,7 @@ import { Admin } from "../../models/Admin/Admin.model.js";
 import bcrypt from "bcrypt";
 import { Agent } from "../../models/Admin/agentModel.js";
 import nodemailer from "nodemailer";
+import { Lead } from "../../models/Leads/leadsModel.js";
 
 const generateAccessandRefreshTokens=async(adminId)=>{
     try{
@@ -159,4 +160,11 @@ const logoutAdmin=asyncHandler(async(req,res)=>{
            .json(new ApiResponse(200,{},"Admin logged out successfully"))
 })
 
-export {registerAdmin,loginAdmin,logoutAdmin,changePassword,updateAdminProfile,getAllAgents,deleteAgent,updateAgent};
+const getAllLeads=asyncHandler(async(req,res)=>{
+    const admin=await Admin.findById(req.admin._id);
+    if(!admin) res.status(404).json({error: "User not found"});
+    const allLeads=await Lead.find();
+    return res.status(200).json(new ApiResponse(200,allLeads,"All Leads fetched"));
+})
+
+export {registerAdmin,loginAdmin,logoutAdmin,changePassword,updateAdminProfile,getAllAgents,deleteAgent,updateAgent,getAllLeads};

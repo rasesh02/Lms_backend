@@ -145,7 +145,7 @@ const getAllLeads=asyncHandler(async(req,res)=>{
     const agentId= agent.agent_id;
    // console.log(agentId)
     if(!agentId) res.status(404).json({error: "Agent not found"});
-    const allLeads =await Lead.find({agent_id: agentId}).select({name: 1,email: 1,lead_id:1,});
+    const allLeads =await Lead.find({agent_id: agentId}).select("-agent_id -agent_name");
     return res.status(200).json(new ApiResponse(200,allLeads,"all leads fetched"));
 })
 

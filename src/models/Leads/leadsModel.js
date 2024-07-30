@@ -53,7 +53,7 @@ const leadSchema=new Schema({
         default: NaN,
     },
     followUpDate: {
-        type: String,
+        type: Date,
         required: true,
         default: Date.now,
     }

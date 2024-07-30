@@ -68,4 +68,5 @@ const registerLead=asyncHandler(async(req,res)=>{
     res.status(200).json(new ApiResponse(200,{},"Lead added successfully"));
 
 })
+
 export {registerLead};

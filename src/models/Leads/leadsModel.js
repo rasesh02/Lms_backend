@@ -37,6 +37,6 @@ const leadSchema=new Schema({
        type: String,
        required: true,
     }
-})
+},{timestamps: true});
 
 export const Lead= mongoose.model("Lead",leadSchema);

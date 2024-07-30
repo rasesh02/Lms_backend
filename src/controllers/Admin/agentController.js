@@ -4,6 +4,7 @@ import {ApiError} from "../../utils/ApiError.js"
 import { Agent } from "../../models/Admin/agentModel.js";
 import bcrypt from "bcrypt";
 import nodemailer from "nodemailer";
+import { Lead } from "../../models/Leads/leadsModel.js";
 
 const generateAccessandRefreshTokens=async(agentId)=>{
     try{
@@ -139,4 +140,13 @@ const changeAgentPassword=asyncHandler(async(req,res)=>{
     return res.status(200).json(new ApiResponse(200,{},"Agent details changed successfully"));
 })
 
-export {registerAgent,loginAgent,dummy,logoutAgent,updateAgentDetails,changeAgentPassword};
+const getAllLeads=asyncHandler(async(req,res)=>{
+    const agent=await Agent.findById(req.agent._id);
+    const agentId= agent.agent_id;
+   // console.log(agentId)
+    if(!agentId) res.status(404).json({error: "Agent not found"});
+    const allLeads =await Lead.find({agent_id: agentId}).select({name: 1,email: 1,lead_id:1,});
+    return res.status(200).json(new ApiResponse(200,allLeads,"all leads fetched"));
+})
+
+export {registerAgent,loginAgent,dummy,logoutAgent,updateAgentDetails,changeAgentPassword,getAllLeads};

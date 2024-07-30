@@ -38,7 +38,7 @@ const agentSchema= new Schema({
     type: String,
     required: true,
    }
-})
+},{timestamps: true})
 
 agentSchema.methods.isPasswordCorrect=async function(password){
    return await bcrypt.compare(password,this.password);

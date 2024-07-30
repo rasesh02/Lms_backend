@@ -49,7 +49,7 @@ const loginAdmin= asyncHandler(async(req,res)=>{
   if(!admin) throw new ApiError(400,"Admin does not exist","Incorrect id");
   const hashedPassword=await bcrypt.compare(password, admin.password);
   console.log(hashedPassword);
-  if(!hashedPassword  && admin.password!==password) throw new ApiError(401,"incorrect password lp","incorrect password 888");
+  if(!hashedPassword  && admin.password!==password) res.status(404).json({error: "Admin not found"});
 
   const {accessToken,refreshToken}= await generateAccessandRefreshTokens(admin._id);
   const loggedInAdmin=await Admin.findById(admin._id).select("-password -refreshToken")

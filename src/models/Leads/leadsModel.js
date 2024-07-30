@@ -21,6 +21,8 @@ const leadSchema=new Schema({
     },
     location:{
         type: String,
+        required: true,
+        default: NaN,
     },
     service:{
         type: String,
@@ -28,6 +30,8 @@ const leadSchema=new Schema({
     },
     message:{
        type: String,
+       required: true,
+       default: NaN,
     },
     agent_name:{
         type: String,
@@ -36,6 +40,22 @@ const leadSchema=new Schema({
     agent_id:{
        type: String,
        required: true,
+    },
+    status:{
+        type: String,
+        required: true,
+        default: "Active",
+        enum:["Proposal Sent","Meeting Fixed","Spoke","Active","Converted to Opportunity"]
+    },
+    companyName:{
+        type: String,
+        required: true,
+        default: NaN,
+    },
+    followUpDate: {
+        type: String,
+        required: true,
+        default: Date.now,
     }
 },{timestamps: true});
 

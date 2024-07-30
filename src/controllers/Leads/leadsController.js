@@ -7,7 +7,7 @@ import nodemailer from "nodemailer";
 
 
 const registerLead=asyncHandler(async(req,res)=>{
-    const {name,email,mobileNumber,location,service,message}=req.body;
+    const {name,email,mobileNumber,location,service,message,status,followUpDate,companyName}=req.body;
     if(!email || !service || !name  || !mobileNumber) res.status(400).json({error: "Please fill all required fields"});
     const uniquesLeadId="MLMS_LEAD"+Math.floor(Math.random() * 100000).toString();
     const leadService= service;
@@ -27,6 +27,9 @@ const registerLead=asyncHandler(async(req,res)=>{
         location,
         service,
         message,
+        status,
+        followUpDate,
+        companyName,
         lead_id: uniquesLeadId,
         agent_id: leadAgentId,
         agent_name: leadAgentName,
@@ -66,7 +69,7 @@ const registerLead=asyncHandler(async(req,res)=>{
         <p>Head Office</p><p>Milleniance Softnet</p><p>New Ashok Nagar Delhi 110096 Near Metro Station Noida sector-18</p><p><b>Thank You</b></p> `, // html body
     })
     res.status(200).json(new ApiResponse(200,{},"Lead added successfully"));
-
+    
 })
 
 export {registerLead};

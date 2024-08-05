@@ -5,6 +5,8 @@ import { Agent } from "../../models/Admin/agentModel.js";
 import bcrypt from "bcrypt";
 import nodemailer from "nodemailer";
 import { Lead } from "../../models/Leads/leadsModel.js";
+import csv from "csvtojson";
+import xlsx from "xlsx";
 
 const generateAccessandRefreshTokens=async(agentId)=>{
     try{
@@ -149,4 +151,111 @@ const getAllLeads=asyncHandler(async(req,res)=>{
     return res.status(200).json(new ApiResponse(200,allLeads,"all leads fetched"));
 })
 
-export {registerAgent,loginAgent,dummy,logoutAgent,updateAgentDetails,changeAgentPassword,getAllLeads};
+const sendMailtoLeads=asyncHandler(async(req,res)=>{
+    const [leads]=req.body;
+    const agent=await Agent.findById(req.agent._id);
+    if(!agent) res.status(404).json({error: "Agent not found"});
+    //console.log(allLeads);
+  
+    let testAccount=await nodemailer.createTestAccount();
+    let transporter=nodemailer.createTransport({
+        service: "gmail",
+        auth:{
+            user: "sushrutpandey1@gmail.com",
+            pass: "jucopocadqdwpvll",
+        }
+    });
+    let info=await transporter.sendMail({
+        from:"sushrutpandey1@gmail.com",
+        to: [leads],
+        subject: "Agent wants to connect with you",   
+        text: "Welcome to Customer Management System of Milleniance",
+        html: `<b>Dear</b><br><b>Welcome to CMS of Milleniance</b><br>
+        <p>Your registration was successful. Thank you for joining our service!</p>
+        <b>Your Login Id = </b>  or <br><b>Your Login Password = </b>
+        <p>Please find the attached download button with this email for downloading your desktop application.</p>
+        <p>For any query do reply to this email</p><br>
+        
+        <p>Best Regards</p>
+        <p>Head Office</p><p>Milleniance Softnet</p><p>New Ashok Nagar Delhi 110096 Near Metro Station Noida sector-18</p><p><b>Thank You</b></p> `, // html body
+    })
+   return res.status(200).json(new ApiResponse(200,{},"Mails sent"))
+})
+
+const addBulkLeadsCSV=asyncHandler(async(req,res)=>{
+    let leads=[];
+
+    csv().fromFile(req.file.path).then(async(response)=>{
+      //  console.log(response);
+
+        for(let i=0;i<response.length;i++){
+            const existingLead=await Lead.findOne({email: response[i].email});
+            //console.log(existingLead.email);
+            if(existingLead) continue;
+            const uniquesLeadId="MLMS_LEAD"+Math.floor(Math.random() * 100000).toString();
+            const leadService=response.service;
+            const agent=await Agent.findOne({
+                service: leadService
+            }).select({agent_id: 1, fullName: 1,email: 1});
+            if(!agent) res.status(404).json({error: "Agent not found"});
+            const leadAgentId= agent.agent_id;
+            const leadAgentName= agent.fullName;
+            leads.push({
+                name: response[i].name,
+                email: response[i].email,
+                mobileNumber: response[i].mobileNumber,
+                location: response[i].location,
+                service: response[i].service,
+                message: response[i].message,
+                lead_id: uniquesLeadId,
+                agent_id: leadAgentId,
+                agent_name: leadAgentName,
+                status: response[i].status,
+                companyName: response[i].companyName,
+            })
+        
+        }
+       await Lead.insertMany(leads);
+    })
+    return res.status(200).json(new ApiResponse(200,{},"File uploaded"));
+})
+const addBulkLeadsExcel=asyncHandler(async(req,res)=>{
+    
+    let leads=[];
+    let workbook=xlsx.readFile(req.file.path);
+    let sheet=workbook.SheetNames;
+    for(let i=0;i<sheet.length;i++){
+        let res=xlsx.utils.sheet_to_json(workbook.Sheets[sheet[i]]);
+        for(let j=0;j<res.length;j++){
+        //console.log(res);
+        let data=res[j];
+        const existingLead=await Lead.findOne({email: data.email});
+        if(existingLead) continue;
+        const uniquesLeadId="MLMS_LEAD"+Math.floor(Math.random() * 100000).toString();
+        const leadService=data.service;
+        const agent=await Agent.findOne({
+            service: leadService
+        }).select({agent_id: 1, fullName: 1,email: 1});
+        if(!agent) res.status(404).json({error: "Agent not found"});
+        const leadAgentId= agent.agent_id;
+        const leadAgentName= agent.fullName;
+        leads.push({
+            name: data.name,
+            email: data.email,
+            mobileNumber: data.mobileNumber,
+            location: data.location,
+            service: data.service,
+            message: data.message,
+            lead_id: uniquesLeadId,
+            agent_id: leadAgentId,
+            agent_name: leadAgentName,
+            status: data.status,
+            companyName: data.companyName,
+        })
+      }
+    }
+    await Lead.insertMany(leads);
+    return res.status(200).json(new ApiResponse(200,{},"File uploaded"));
+})
+
+export {registerAgent,loginAgent,dummy,logoutAgent,updateAgentDetails,changeAgentPassword,getAllLeads,addBulkLeadsCSV,addBulkLeadsExcel,sendMailtoLeads};
